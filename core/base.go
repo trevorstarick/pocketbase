@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/daos"
+	"github.com/pocketbase/pocketbase/logs"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/models/settings"
 	"github.com/pocketbase/pocketbase/tools/filesystem"
@@ -929,6 +929,8 @@ func (app *BaseApp) initLogsDB() error {
 
 	app.logsDao = daos.NewMultiDB(concurrentDB, nonconcurrentDB)
 
+	logs.SetDao(app.logsDao)
+
 	return nil
 }
 
@@ -960,12 +962,16 @@ func (app *BaseApp) initDataDB() error {
 
 	if app.IsDebug() {
 		nonconcurrentDB.QueryLogFunc = func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
-			color.HiBlack("[%.2fms] %v\n", float64(t.Milliseconds()), sql)
+			logs.Debug().
+				Str("type", "query").
+				Msgf("[%.2fms] %v\n", float64(t.Milliseconds()), sql)
 		}
 		concurrentDB.QueryLogFunc = nonconcurrentDB.QueryLogFunc
 
 		nonconcurrentDB.ExecLogFunc = func(ctx context.Context, t time.Duration, sql string, result sql.Result, err error) {
-			color.HiBlack("[%.2fms] %v\n", float64(t.Milliseconds()), sql)
+			logs.Debug().
+				Str("type", "exec").
+				Msgf("[%.2fms] %v\n", float64(t.Milliseconds()), sql)
 		}
 		concurrentDB.ExecLogFunc = nonconcurrentDB.ExecLogFunc
 	}

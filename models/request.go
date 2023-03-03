@@ -1,6 +1,10 @@
 package models
 
-import "github.com/pocketbase/pocketbase/tools/types"
+import (
+	"fmt"
+
+	"github.com/pocketbase/pocketbase/tools/types"
+)
 
 var _ Model = (*Request)(nil)
 
@@ -23,6 +27,10 @@ type Request struct {
 	Referer   string        `db:"referer" json:"referer"`
 	UserAgent string        `db:"userAgent" json:"userAgent"`
 	Meta      types.JsonMap `db:"meta" json:"meta"`
+}
+
+func (m Request) String() string {
+	return fmt.Sprintf("%v %v", m.Method, m.Url)
 }
 
 func (m *Request) TableName() string {
