@@ -18,6 +18,10 @@ func bindLogsApi(app core.App, rg *echo.Group) {
 	subGroup.GET("/requests", api.requestsList)
 	subGroup.GET("/requests/stats", api.requestsStats)
 	subGroup.GET("/requests/:id", api.requestView)
+
+	subGroup.GET("/errors", api.errorsList)
+
+	subGroup.GET("/logs", api.logsList)
 }
 
 type logsApi struct {
@@ -28,6 +32,16 @@ var requestFilterFields = []string{
 	"rowid", "id", "created", "updated",
 	"url", "method", "status", "auth",
 	"remoteIp", "userIp", "referer", "userAgent",
+}
+
+var errorFilterFields = []string{
+	"rowid", "id", "created", "updated",
+	"file", "line", "error", "fatal", "meta",
+}
+
+var logFilterFields = []string{
+	"rowid", "id", "created", "updated",
+	"level", "message", "meta",
 }
 
 func (api *logsApi) requestsList(c echo.Context) error {
@@ -78,4 +92,32 @@ func (api *logsApi) requestView(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, request)
+}
+
+func (api *logsApi) errorsList(c echo.Context) error {
+	fieldResolver := search.NewSimpleFieldResolver(errorFilterFields...)
+
+	result, err := search.NewProvider(fieldResolver).
+		Query(api.app.LogsDao().ErrorQuery()).
+		ParseAndExec(c.QueryParams().Encode(), &[]*models.Error{})
+
+	if err != nil {
+		return NewBadRequestError("", err)
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func (api *logsApi) logsList(c echo.Context) error {
+	fieldResolver := search.NewSimpleFieldResolver(logFilterFields...)
+
+	result, err := search.NewProvider(fieldResolver).
+		Query(api.app.LogsDao().LogQuery()).
+		ParseAndExec(c.QueryParams().Encode(), &[]*models.Log{})
+
+	if err != nil {
+		return NewBadRequestError("", err)
+	}
+
+	return c.JSON(http.StatusOK, result)
 }
