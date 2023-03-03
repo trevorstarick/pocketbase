@@ -284,7 +284,9 @@ func ActivityLogger(app core.App) echo.MiddlewareFunc {
 				return err
 			}
 
-			return logs.Request(c).Err(err).Msg("")
+			logs.Request(c).Err(err).Msg("")
+
+			return nil
 		}
 	}
 }
