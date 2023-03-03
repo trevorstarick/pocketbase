@@ -226,10 +226,8 @@ func (e *Event) Msgf(format string, args ...interface{}) {
 	e.flush()
 }
 
-func SetDao(d *daos.Dao) {
-	if daodb == nil {
-		daodb = d
-	}
+func SetDao(db *daos.Dao) {
+	daodb = db
 }
 
 func NoColour() {
@@ -291,15 +289,11 @@ func Error() *Event {
 }
 
 func Fatal() *Event {
-	return &Event{
-		model: models.NewFatalError(false),
-	}
+	return &Event{model: models.NewFatalError(false)}
 }
 
 func Panic() *Event {
-	return &Event{
-		model: models.NewFatalError(true),
-	}
+	return &Event{model: models.NewFatalError(true)}
 }
 
 func Println(v ...interface{}) {
