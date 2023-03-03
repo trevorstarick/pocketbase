@@ -55,15 +55,16 @@ var (
 	Writer io.Writer
 	daodb  *daos.Dao
 
-	colored = true
-	format  = FormatText
+	LogLevel  = models.InfoLevel
+	LogFormat = FormatBasic
+	colored   = true
 )
 
 type OutputFormat string
 
 const (
-	FormatText OutputFormat = "text"
-	FormatJSON OutputFormat = "json"
+	FormatBasic OutputFormat = "text"
+	FormatJSON  OutputFormat = "json"
 )
 
 type Event struct {
@@ -94,11 +95,14 @@ func (e *Event) flush() error {
 		m.Meta = e.meta
 	case *models.Log:
 		m.Meta = e.meta
+		if m.Level < LogLevel {
+			return nil
+		}
 	}
 
 	if Writer != nil {
-		switch format {
-		case FormatText:
+		switch LogFormat {
+		case FormatBasic:
 			var msg string
 
 			switch m := e.model.(type) {
@@ -111,15 +115,17 @@ func (e *Event) flush() error {
 			}
 
 			if colored {
-				Writer.Write([]byte(color.HiBlackString(msg)))
+				Writer.Write([]byte(color.HiBlackString(msg) + "\n"))
 			} else {
-				Writer.Write([]byte(fmt.Sprintln(msg)))
+				Writer.Write([]byte(msg + "\n"))
 			}
 		case FormatJSON:
 			err := json.NewEncoder(Writer).Encode(e.model)
 			if err != nil {
 				return err
 			}
+		default:
+			return fmt.Errorf("unknown log format: %s", LogFormat)
 		}
 	}
 

@@ -1,21 +1,10 @@
 package models
 
-import "github.com/pocketbase/pocketbase/tools/types"
+import (
+	"github.com/pocketbase/pocketbase/tools/types"
+)
 
 var _ Model = (*Request)(nil)
-
-// Level defines log levels.
-type Level string
-
-const (
-	TraceLevel = "trace"
-	DebugLevel = "debug"
-	InfoLevel  = "info"
-	WarnLevel  = "warn"
-	ErrorLevel = "error"
-	FatalLevel = "fatal"
-	PanicLevel = "panic"
-)
 
 type Log struct {
 	BaseModel
