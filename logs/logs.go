@@ -72,20 +72,22 @@ type Event struct {
 	meta  types.JsonMap
 }
 
-func (e *Event) flush() error {
+func (e *Event) flush() {
 	if e.model == nil {
-		return nil
+		return
 	}
 
 	if Writer == nil && daodb == nil {
-		return nil
+		return
 	}
 
 	switch m := e.model.(type) {
 	case *models.Error, *models.Request, *models.Log:
 		m.RefreshUpdated()
 	default:
-		return fmt.Errorf("unknown active model")
+		fmt.Fprintf(Writer, "error: unknown active model\n")
+
+		return
 	}
 
 	switch m := e.model.(type) {
@@ -96,7 +98,7 @@ func (e *Event) flush() error {
 	case *models.Log:
 		m.Meta = e.meta
 		if m.Level < LogLevel {
-			return nil
+			return
 		}
 	}
 
@@ -122,23 +124,26 @@ func (e *Event) flush() error {
 		case FormatJSON:
 			err := json.NewEncoder(Writer).Encode(e.model)
 			if err != nil {
-				return err
+				fmt.Fprintf(Writer, "error: %s\n", err.Error())
+
+				return
 			}
 		default:
-			return fmt.Errorf("unknown log format: %s", LogFormat)
+			fmt.Fprintf(Writer, "error: unknown log format: %s\n", LogFormat)
+			return
 		}
 	}
 
 	if daodb != nil {
 		err := daodb.Save(e.model)
 		if err != nil {
-			return err
+			fmt.Fprintf(Writer, "error: %s\n", err.Error())
+
+			return
 		}
 
 		e.model = nil
 	}
-
-	return nil
 }
 
 func (e *Event) setMeta(key string, value any) *Event {
@@ -198,9 +203,11 @@ func (e *Event) Duration(key string, d time.Duration) *Event {
 	return e.setMeta(key, d.String())
 }
 
-func (e *Event) Msg(s string) error {
+func (e *Event) Msg(s string) {
 	if s == "" {
-		return e.flush()
+		e.flush()
+
+		return
 	}
 
 	switch m := e.model.(type) {
@@ -210,11 +217,11 @@ func (e *Event) Msg(s string) error {
 		e.setMeta("msg", s)
 	}
 
-	return e.flush()
+	e.flush()
 }
 
-func (e *Event) Msgf(format string, args ...interface{}) error {
-	return e.Msg(fmt.Sprintf(format, args...))
+func (e *Event) Msgf(format string, args ...interface{}) {
+	e.Msg(fmt.Sprintf(format, args...))
 }
 
 func SetDao(d *daos.Dao) {
