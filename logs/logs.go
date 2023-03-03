@@ -117,9 +117,9 @@ func (e *Event) flush() {
 			}
 
 			if colored {
-				Writer.Write([]byte(color.HiBlackString(msg) + "\n"))
+				Writer.Write([]byte(color.HiBlackString(msg)))
 			} else {
-				Writer.Write([]byte(msg + "\n"))
+				Writer.Write([]byte(msg))
 			}
 		case FormatJSON:
 			err := json.NewEncoder(Writer).Encode(e.model)
