@@ -204,6 +204,12 @@ func (e *Event) Duration(key string, d time.Duration) *Event {
 }
 
 func (e *Event) Msg(s string) {
+	e.Msgf("%s\n", s)
+}
+
+func (e *Event) Msgf(format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+
 	if s == "" {
 		e.flush()
 
@@ -218,10 +224,6 @@ func (e *Event) Msg(s string) {
 	}
 
 	e.flush()
-}
-
-func (e *Event) Msgf(format string, args ...interface{}) {
-	e.Msg(fmt.Sprintf(format, args...))
 }
 
 func SetDao(d *daos.Dao) {
