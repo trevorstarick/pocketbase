@@ -9,7 +9,7 @@ var _ Model = (*Request)(nil)
 type Log struct {
 	BaseModel
 
-	Level Level `json:"level" db:"level"`
+	Level LogLevel `json:"level" db:"level"`
 
 	Message string        `json:"message" db:"message"`
 	Meta    types.JsonMap `json:"meta" db:"meta"`

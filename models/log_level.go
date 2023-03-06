@@ -9,10 +9,10 @@ import (
 )
 
 // Level defines log levels.
-type Level int8
+type LogLevel int8
 
 const (
-	DebugLevel Level = iota
+	DebugLevel LogLevel = iota
 	InfoLevel
 	WarnLevel
 	ErrorLevel
@@ -20,7 +20,7 @@ const (
 	PanicLevel
 	NoLevel
 	Disabled
-	TraceLevel Level = -1
+	TraceLevel LogLevel = -1
 )
 
 var (
@@ -40,12 +40,12 @@ var (
 	LevelPanicValue = "panic"
 
 	// LevelFieldMarshalFunc allows customization of global level field marshaling.
-	LevelFieldMarshalFunc = func(l Level) string {
+	LevelFieldMarshalFunc = func(l LogLevel) string {
 		return l.String()
 	}
 )
 
-func (l Level) String() string {
+func (l LogLevel) String() string {
 	switch l {
 	case TraceLevel:
 		return LevelTraceValue
@@ -71,7 +71,7 @@ func (l Level) String() string {
 
 // ParseLevel converts a level string into a zerolog Level value.
 // returns an error if the input string does not match known values.
-func ParseLevel(levelStr string) (Level, error) {
+func ParseLevel(levelStr string) (LogLevel, error) {
 	switch strings.ToLower(levelStr) {
 	case LevelFieldMarshalFunc(TraceLevel):
 		return TraceLevel, nil
@@ -99,11 +99,11 @@ func ParseLevel(levelStr string) (Level, error) {
 	if i > 127 || i < -128 {
 		return NoLevel, fmt.Errorf("Out-Of-Bounds Level: '%d', defaulting to NoLevel", i)
 	}
-	return Level(i), nil
+	return LogLevel(i), nil
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler to allow for easy reading from toml/yaml/json formats
-func (l *Level) UnmarshalText(text []byte) error {
+func (l *LogLevel) UnmarshalText(text []byte) error {
 	if l == nil {
 		return errors.New("can't unmarshal a nil *Level")
 	}
@@ -113,6 +113,6 @@ func (l *Level) UnmarshalText(text []byte) error {
 }
 
 // MarshalText implements encoding.TextMarshaler to allow for easy writing into toml/yaml/json formats
-func (l Level) MarshalText() ([]byte, error) {
+func (l LogLevel) MarshalText() ([]byte, error) {
 	return []byte(LevelFieldMarshalFunc(l)), nil
 }

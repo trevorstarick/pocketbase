@@ -68,6 +68,7 @@ const (
 )
 
 type Event struct {
+	level models.LogLevel
 	model models.Model
 	meta  types.JsonMap
 }
@@ -90,6 +91,10 @@ func (e *Event) flush() {
 		return
 	}
 
+	if e.level < LogLevel {
+		return
+	}
+
 	switch m := e.model.(type) {
 	case *models.Error:
 		m.Meta = e.meta
@@ -97,9 +102,6 @@ func (e *Event) flush() {
 		m.Meta = e.meta
 	case *models.Log:
 		m.Meta = e.meta
-		if m.Level < LogLevel {
-			return
-		}
 	}
 
 	if Writer != nil {
@@ -265,36 +267,36 @@ func (e *Event) Request(c echo.Context) *Event {
 }
 
 func Trace() *Event {
-	return &Event{model: &models.Log{
+	return &Event{level: models.TraceLevel, model: &models.Log{
 		Level: models.TraceLevel,
 	}}
 }
 func Debug() *Event {
-	return &Event{model: &models.Log{
+	return &Event{level: models.DebugLevel, model: &models.Log{
 		Level: models.DebugLevel,
 	}}
 }
 func Info() *Event {
-	return &Event{model: &models.Log{
+	return &Event{level: models.InfoLevel, model: &models.Log{
 		Level: models.InfoLevel,
 	}}
 }
 func Warn() *Event {
-	return &Event{model: &models.Log{
+	return &Event{level: models.WarnLevel, model: &models.Log{
 		Level: models.WarnLevel,
 	}}
 }
 
 func Error() *Event {
-	return &Event{model: &models.Error{}}
+	return &Event{level: models.ErrorLevel, model: &models.Error{}}
 }
 
 func Fatal() *Event {
-	return &Event{model: models.NewFatalError(false)}
+	return &Event{level: models.FatalLevel, model: models.NewFatalError(false)}
 }
 
 func Panic() *Event {
-	return &Event{model: models.NewFatalError(true)}
+	return &Event{level: models.PanicLevel, model: models.NewFatalError(true)}
 }
 
 func Println(v ...interface{}) {
