@@ -69,9 +69,10 @@ const (
 )
 
 type Event struct {
-	level models.LogLevel
-	model models.Model
-	meta  types.JsonMap
+	level   models.LogLevel
+	message string
+	model   models.Model
+	meta    types.JsonMap
 }
 
 func (e *Event) flush() {
@@ -136,10 +137,43 @@ func (e *Event) flush() {
 				panic(err)
 			}
 
-			fmt.Fprintf(Writer, "%s ", time.Now().Format(time.RFC3339Nano))
+			fmt.Fprintf(Writer, "%s ", time.Now().Format("2006-01-02T15:04:05"))
+
+			if colored {
+				color.Set(color.Bold)
+				switch e.level {
+				case models.DebugLevel:
+					color.Set(color.FgHiBlack)
+				case models.InfoLevel:
+					color.Set(color.FgHiBlue)
+				case models.WarnLevel:
+					color.Set(color.FgHiYellow)
+				case models.ErrorLevel:
+					color.Set(color.FgHiRed)
+				case models.FatalLevel:
+					color.Set(color.FgHiMagenta)
+				case models.PanicLevel:
+					color.Set(color.FgHiCyan)
+				default:
+
+				}
+
+				fmt.Fprintf(Writer, "%-5s ", e.level.String())
+				color.Unset()
+			} else {
+				fmt.Fprintf(Writer, "%-5s ", e.level.String())
+			}
+
+			if colored {
+				color.Set(color.FgHiBlack, color.Underline)
+				fmt.Fprintf(Writer, "%s", e.message)
+				color.Unset()
+			} else {
+				fmt.Fprintf(Writer, "%s", e.message)
+			}
 
 			for k, v := range j {
-				if k == "meta" || k == "created" || k == "updated" || k == "id" {
+				if k == "meta" || k == "created" || k == "updated" || k == "id" || k == "level" || k == "message" {
 					continue
 				}
 
@@ -148,13 +182,17 @@ func (e *Event) flush() {
 					continue
 				}
 
-				fmt.Fprintf(Writer, `%s="%v" `, k, sv)
+				fmt.Fprintf(Writer, ` %s="%v" `, k, sv)
 			}
 
 			switch m := j["meta"].(type) {
 			case map[string]any:
 				for k, v := range m {
-					fmt.Fprintf(Writer, `_%s="%v" `, k, v)
+					if k == "message" || k == "level" {
+						continue
+					}
+
+					fmt.Fprintf(Writer, ` _%s="%v"`, k, v)
 				}
 			}
 
@@ -256,6 +294,8 @@ func (e *Event) Msgf(format string, args ...interface{}) {
 	}
 
 	s = strings.TrimSuffix(s, "\n")
+
+	e.message = s
 
 	switch m := e.model.(type) {
 	case *models.Log:
