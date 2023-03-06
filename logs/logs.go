@@ -60,11 +60,11 @@ var (
 	colored   = true
 )
 
-type OutputFormat string
+type outputFormat string
 
 const (
-	FormatBasic OutputFormat = "text"
-	FormatJSON  OutputFormat = "json"
+	FormatBasic outputFormat = "text"
+	FormatJSON  outputFormat = "json"
 )
 
 type Event struct {
