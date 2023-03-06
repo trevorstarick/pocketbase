@@ -117,9 +117,9 @@ func (e *Event) flush() {
 			}
 
 			if colored {
-				Writer.Write([]byte(color.HiBlackString(msg)))
+				fmt.Fprintln(Writer, color.HiBlackString(msg))
 			} else {
-				Writer.Write([]byte(msg))
+				fmt.Fprintln(Writer, msg)
 			}
 		case FormatJSON:
 			err := json.NewEncoder(Writer).Encode(e.model)
@@ -204,7 +204,7 @@ func (e *Event) Duration(key string, d time.Duration) *Event {
 }
 
 func (e *Event) Msg(s string) {
-	e.Msgf("%s\n", s)
+	e.Msgf("%s", s)
 }
 
 func (e *Event) Msgf(format string, args ...interface{}) {
@@ -215,6 +215,8 @@ func (e *Event) Msgf(format string, args ...interface{}) {
 
 		return
 	}
+
+	s = strings.TrimSuffix(s, "\n")
 
 	switch m := e.model.(type) {
 	case *models.Log:
