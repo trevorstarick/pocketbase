@@ -137,7 +137,7 @@ func (e *Event) flush() {
 				panic(err)
 			}
 
-			fmt.Fprintf(Writer, "%s ", time.Now().Format("2006-01-02T15:04:05"))
+			fmt.Fprintf(Writer, "%s", time.Now().Format("2006-01-02T15:04:05"))
 
 			if colored {
 				color.Set(color.Bold)
@@ -158,18 +158,18 @@ func (e *Event) flush() {
 
 				}
 
-				fmt.Fprintf(Writer, "%-5s ", e.level.String())
+				fmt.Fprintf(Writer, " %-5s", e.level.String())
 				color.Unset()
 			} else {
-				fmt.Fprintf(Writer, "%-5s ", e.level.String())
+				fmt.Fprintf(Writer, " %-5s", e.level.String())
 			}
 
 			if colored {
 				color.Set(color.FgHiBlack, color.Underline)
-				fmt.Fprintf(Writer, "%s", e.message)
+				fmt.Fprintf(Writer, " %s", e.message)
 				color.Unset()
 			} else {
-				fmt.Fprintf(Writer, "%s", e.message)
+				fmt.Fprintf(Writer, " %s", e.message)
 			}
 
 			for k, v := range j {
@@ -182,7 +182,7 @@ func (e *Event) flush() {
 					continue
 				}
 
-				fmt.Fprintf(Writer, ` %s="%v" `, k, sv)
+				fmt.Fprintf(Writer, ` %s="%v"`, k, sv)
 			}
 
 			switch m := j["meta"].(type) {
