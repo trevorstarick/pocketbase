@@ -236,7 +236,7 @@ func NoColour() {
 	colored = false
 }
 
-func Request(c echo.Context) *Event {
+func (e *Event) Request(c echo.Context) *Event {
 	httpRequest := c.Request()
 	httpResponse := c.Response()
 	status := httpResponse.Status
@@ -250,7 +250,6 @@ func Request(c echo.Context) *Event {
 
 	ip, _, _ := net.SplitHostPort(httpRequest.RemoteAddr)
 
-	e := &Event{meta: types.JsonMap{}}
 	e.model = &models.Request{
 		Url:       httpRequest.URL.RequestURI(),
 		Method:    strings.ToLower(httpRequest.Method),
