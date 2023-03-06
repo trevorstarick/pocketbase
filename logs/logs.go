@@ -63,8 +63,9 @@ var (
 type outputFormat string
 
 const (
-	FormatBasic outputFormat = "text"
+	FormatBasic outputFormat = "basic"
 	FormatJSON  outputFormat = "json"
+	FormatText  outputFormat = "text"
 )
 
 type Event struct {
@@ -123,6 +124,42 @@ func (e *Event) flush() {
 			} else {
 				fmt.Fprintln(Writer, msg)
 			}
+		case FormatText:
+			b, err := json.Marshal(e.model)
+			if err != nil {
+				panic(err)
+			}
+
+			var j map[string]any
+			err = json.Unmarshal(b, &j)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Fprintf(Writer, "%s ", time.Now().Format(time.RFC3339Nano))
+
+			for k, v := range j {
+				if k == "meta" || k == "created" || k == "updated" || k == "id" {
+					continue
+				}
+
+				sv := fmt.Sprint(v)
+				if sv == "" || sv == "null" || sv == "[]" || sv == "{}" || sv == "0" {
+					continue
+				}
+
+				fmt.Fprintf(Writer, `%s="%v" `, k, sv)
+			}
+
+			switch m := j["meta"].(type) {
+			case map[string]any:
+				for k, v := range m {
+					fmt.Fprintf(Writer, `_%s="%v" `, k, v)
+				}
+			}
+
+			fmt.Fprintln(Writer)
+
 		case FormatJSON:
 			err := json.NewEncoder(Writer).Encode(e.model)
 			if err != nil {
