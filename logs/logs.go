@@ -164,12 +164,14 @@ func (e *Event) flush() {
 				fmt.Fprintf(Writer, " %-5s", e.level.String())
 			}
 
+			fmt.Fprintf(Writer, " ")
+
 			if colored {
 				color.Set(color.FgHiBlack, color.Underline)
-				fmt.Fprintf(Writer, " %s", e.message)
+				fmt.Fprintf(Writer, "%s", e.message)
 				color.Unset()
 			} else {
-				fmt.Fprintf(Writer, " %s", e.message)
+				fmt.Fprintf(Writer, "%s", e.message)
 			}
 
 			for k, v := range j {
